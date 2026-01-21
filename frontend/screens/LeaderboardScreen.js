@@ -8,8 +8,9 @@ import {
     ActivityIndicator,
     SafeAreaView,
     RefreshControl,
+    TextInput,
 } from 'react-native';
-import { getLeaderboard, getStats, triggerDemo } from '../services/api';
+import { getLeaderboard, getStats, triggerDemo, searchUsers } from '../services/api';
 
 const LeaderboardScreen = ({ navigation }) => {
     const [users, setUsers] = useState([]);
@@ -20,6 +21,10 @@ const LeaderboardScreen = ({ navigation }) => {
     const [totalUsers, setTotalUsers] = useState(0);
     const [updateCount, setUpdateCount] = useState(0);
     const [stats, setStats] = useState(null);
+    
+    // Add search state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
     
     // Use ref to track current page for intervals
     const pageRef = useRef(1);
@@ -63,6 +68,37 @@ const LeaderboardScreen = ({ navigation }) => {
         if (statsData) setStats(statsData);
     };
 
+    // Add search function
+    const handleSearch = async () => {
+        if (searchQuery.trim() === '') {
+            setIsSearching(false);
+            loadData(1);
+            return;
+        }
+
+        setIsSearching(true);
+        setLoading(true);
+        
+        const data = await searchUsers(searchQuery, 1, 45);
+        
+        if (data.success) {
+            setUsers(data.users || []);
+            setTotalPages(data.totalPages || 1);
+            setTotalUsers(data.total || 0);
+            setPage(1);
+            pageRef.current = 1;
+        }
+        
+        setLoading(false);
+    };
+
+    // Clear search and return to normal leaderboard
+    const clearSearch = () => {
+        setSearchQuery('');
+        setIsSearching(false);
+        loadData(1);
+    };
+
     // Initial load
     useEffect(() => {
         loadData(1);
@@ -72,17 +108,23 @@ const LeaderboardScreen = ({ navigation }) => {
     // Auto-refresh for current page every 3 seconds
     useEffect(() => {
         const interval = setInterval(() => {
-            console.log(`Auto-refreshing page ${pageRef.current}`);
-            loadData(pageRef.current, false);
+            if (!isSearching) {
+                console.log(`Auto-refreshing page ${pageRef.current}`);
+                loadData(pageRef.current, false);
+            }
         }, 3000); // Every 3 seconds
         
         return () => clearInterval(interval);
-    }, []);
+    }, [isSearching]);
 
     const onRefresh = useCallback(() => {
-        loadData(pageRef.current, true);
-        loadStats();
-    }, []);
+        if (isSearching) {
+            handleSearch();
+        } else {
+            loadData(pageRef.current, true);
+            loadStats();
+        }
+    }, [isSearching, searchQuery]);
 
     const handleDemo = async () => {
         const result = await triggerDemo();
@@ -111,7 +153,7 @@ const LeaderboardScreen = ({ navigation }) => {
     };
 
     const renderPagination = () => {
-        if (totalPages <= 1) return null;
+        if (totalPages <= 1 || isSearching) return null;
         
         const pages = [];
         const maxVisible = 5;
@@ -191,23 +233,59 @@ const LeaderboardScreen = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <View>
+                <View style={styles.headerLeft}>
                     <Text style={styles.title}>🏆 Live Leaderboard</Text>
                     <Text style={styles.subtitle}>
                         {totalUsers.toLocaleString()} users • {updateCount} updates
                         {stats && ` • A:${stats.usersWithA} Z:${stats.usersWithZ}`}
                     </Text>
                 </View>
+                
+                {/* Search bar moved to top right */}
+                <View style={styles.searchContainer}>
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        onSubmitEditing={handleSearch}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        placeholderTextColor="#999"
+                    />
+                    {searchQuery.length > 0 && (
+                        <TouchableOpacity onPress={clearSearch} style={styles.clearButton}>
+                            <Text style={styles.clearButtonText}>✕</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
+                
                 <TouchableOpacity style={styles.demoBtn} onPress={handleDemo}>
                     <Text style={styles.demoText}>🎯 Demo</Text>
                 </TouchableOpacity>
             </View>
 
+            {/* Search indicator */}
+            {isSearching && (
+                <View style={styles.searchIndicator}>
+                    <Text style={styles.searchIndicatorText}>
+                        Searching for "{searchQuery}"
+                    </Text>
+                    <TouchableOpacity onPress={clearSearch}>
+                        <Text style={styles.clearSearchText}>Clear</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
             {renderPagination()}
 
             <View style={styles.infoBar}>
                 <Text style={styles.infoText}>
-                    Page {page} of {totalPages} • Auto-updates every 3s
+                    {isSearching ? (
+                        `Search results ${users.length} users`
+                    ) : (
+                        `Page ${page} of ${totalPages} • Auto-updates every 3s`
+                    )}
                 </Text>
             </View>
 
@@ -226,16 +304,17 @@ const LeaderboardScreen = ({ navigation }) => {
                 }
                 ListEmptyComponent={() => (
                     <View style={styles.empty}>
-                        <Text>No users found</Text>
+                        <Text>{isSearching ? 'No users found' : 'No users available'}</Text>
                     </View>
                 )}
             />
 
-            <TouchableOpacity
+            {/* REMOVED: Search button at bottom */}
+            {/* <TouchableOpacity
                 style={styles.searchBtn}
                 onPress={() => navigation.navigate('Search')}>
                 <Text style={styles.searchText}>🔍 Search Users</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
         </SafeAreaView>
     );
 };
@@ -252,31 +331,78 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 16,
+        padding: 12,
         backgroundColor: '#f8f9fa',
         borderBottomWidth: 1,
         borderBottomColor: '#dee2e6',
     },
+    headerLeft: {
+        flex: 1,
+    },
     title: { 
-        fontSize: 22, 
+        fontSize: 20, 
         fontWeight: 'bold', 
         color: '#212529' 
     },
     subtitle: { 
-        fontSize: 12, 
+        fontSize: 11, 
         color: '#6c757d', 
         marginTop: 2 
     },
+    searchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: '#ced4da',
+        paddingHorizontal: 8,
+        marginHorizontal: 8,
+        width: 150,
+    },
+    searchInput: {
+        flex: 1,
+        paddingVertical: 6,
+        fontSize: 14,
+        color: '#212529',
+    },
+    clearButton: {
+        padding: 4,
+    },
+    clearButtonText: {
+        color: '#6c757d',
+        fontSize: 14,
+    },
     demoBtn: {
         backgroundColor: '#007bff',
-        paddingHorizontal: 16,
-        paddingVertical: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
         borderRadius: 6,
     },
     demoText: { 
         color: '#fff', 
         fontWeight: '600', 
         fontSize: 12 
+    },
+    searchIndicator: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        backgroundColor: '#e8f4ff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#cfe2ff',
+    },
+    searchIndicatorText: {
+        fontSize: 14,
+        color: '#007AFF',
+        fontStyle: 'italic',
+    },
+    clearSearchText: {
+        fontSize: 14,
+        color: '#007AFF',
+        fontWeight: '500',
     },
     infoBar: {
         padding: 8,
@@ -378,18 +504,7 @@ const styles = StyleSheet.create({
         padding: 40,
         alignItems: 'center',
     },
-    searchBtn: {
-        backgroundColor: '#28a745',
-        margin: 16,
-        padding: 16,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    searchText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
+
 });
 
 export default LeaderboardScreen;
