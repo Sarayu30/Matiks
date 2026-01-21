@@ -236,9 +236,9 @@ const LeaderboardScreen = ({ navigation }) => {
                 <View style={styles.headerLeft}>
                     <Text style={styles.title}>🏆 Live Leaderboard</Text>
                     <Text style={styles.subtitle}>
-                        {totalUsers.toLocaleString()} users • {updateCount} updates
-                        {stats && ` • A:${stats.usersWithA} Z:${stats.usersWithZ}`}
-                    </Text>
+    {totalUsers.toLocaleString()} users • {updateCount} updates
+    {stats && ` • A:${stats.usersWithA} Z:${stats.usersWithZ}`}
+</Text>
                 </View>
                 
                 {/* Search bar moved to top right */}
@@ -261,7 +261,7 @@ const LeaderboardScreen = ({ navigation }) => {
                 </View>
                 
                 <TouchableOpacity style={styles.demoBtn} onPress={handleDemo}>
-                    <Text style={styles.demoText}>🎯 Demo</Text>
+                    <Text style={styles.demoText}>Demo</Text>
                 </TouchableOpacity>
             </View>
 

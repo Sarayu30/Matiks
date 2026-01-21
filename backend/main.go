@@ -480,7 +480,7 @@ func (s *UserStore) GetStats() map[string]interface{} {
 	}
 }
 
-// ==================== MAIN ====================
+//main
 var userStore *UserStore
 
 func init() {
@@ -502,7 +502,7 @@ func init() {
 	}()
 	
 	log.Printf("✅ Optimized leaderboard initialized")
-	log.Printf("📊 Users: 20,000")
+	log.Printf(" Users: 20,000")
 	log.Printf("⚡ Optimizations:")
 	log.Printf("   1. O(1) lookups with map")
 	log.Printf("   2. Concurrent reads with RWMutex")
@@ -652,8 +652,8 @@ func main() {
 	}))
 	
 	port := ":8080"
-	log.Printf("🚀 Optimized Server started on %s", port)
-	log.Printf("📊 Total users: %d", atomic.LoadInt64(&userStore.totalUsers))
+	log.Printf(" Optimized Server started on %s", port)
+	log.Printf(" Total users: %d", atomic.LoadInt64(&userStore.totalUsers))
 	log.Printf("⚡ Optimizations active:")
 	log.Printf("   1. O(1) lookups with map")
 	log.Printf("   2. Concurrent reads with RWMutex")
