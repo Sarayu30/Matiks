@@ -3,6 +3,9 @@
     "name": "Matiks Leaderboard",
     "slug": "matiks-leaderboard",
     "version": "1.0.0",
-    "platforms": ["web"]
+    "platforms": ["ios", "android", "web"],
+    "web": {
+      "bundler": "metro"
+    }
   }
 }
