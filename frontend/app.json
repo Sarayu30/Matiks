@@ -1,0 +1,8 @@
+﻿{
+  "expo": {
+    "name": "Matiks Leaderboard",
+    "slug": "matiks-leaderboard",
+    "version": "1.0.0",
+    "platforms": ["web"]
+  }
+}

@@ -1,0 +1,94 @@
+# React Native
+# =============
+node_modules/
+.expo/
+npm-debug.*
+*.log
+*.pem
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+package-lock.json
+yarn.lock
+
+# Android
+# ========
+android/.gradle/
+android/app/build/
+android/build/
+*.apk
+*.aab
+*.keystore
+android/local.properties
+android/.cxx/
+android/.idea/
+
+# iOS
+# ====
+ios/build/
+ios/Pods/
+ios/*.xcworkspace
+ios/*.xcodeproj/xcuserdata
+ios/*.xcodeproj/project.xcworkspace/xcuserdata
+ios/*.xcodeproj/project.xcworkspace/xcshareddata
+ios/DerivedData/
+Profile
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# IDE
+# ====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Testing
+# ========
+coverage/
+*.junit
+*.coverage
+*.lcov
+
+# Backend (Go)
+# =============
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go workspace file
+go.work
+
+# VS Code specific
+.vscode/settings.json
+.vscode/launch.json
+
+# Custom build outputs
+dist/
+bin/
+temp/
+tmp/
+out/
+
+# Go modules directory
+/vendor/
+
+# OS generated files
+.directory
+*~
+*.swp
