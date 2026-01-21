@@ -30,11 +30,11 @@ type UserStore struct {
 	usersByName   map[string]*User
 	sortedUsers   []*User // Cached sorted version by rating
 	
-	// 2. OPTIMIZATION: For search - alphabetically sorted slice
+	// 2. OPTIMIZATION: For search ,  alphabetically sorted slice
 	sortedByName  []*User // Sorted by UsernameLower
 	
 	// 3. OPTIMIZATION: First-character bucketing
-	firstCharBuckets map[byte][]*User // Map first char -> users
+	firstCharBuckets map[byte][]*User // Map first char  to users
 	
 	// 4. SYNC.RWMUTEX for concurrent reads
 	mu sync.RWMutex
